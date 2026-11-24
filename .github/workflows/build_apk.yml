@@ -12,11 +12,25 @@ jobs:
       ANDROID_HOME: /usr/local/lib/android/sdk
       ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Decode clean project files
-        run: |
-          sed -i 's/flet==0.24.1/flet>=0.25.2/g' requirements.txt
-          echo "W3Byb2plY3RdCm5hbWUgPSAiaHlwZXItYWktYm90Igp2ZXJzaW9uID0gIjEuMC4wIgpkZXNjcmlwdGlvbiA9ICJIWVBFUiBBSSBCT1QgLSBEZXJpdiBBdXRvbWF0ZWQgVHJhZGluZyBTeXN0ZW0iCnJlcXVpcmVzLXB5dGhvbiA9ICI+PTMuMTAiCmRlcGVuZGVuY2llcyA9IFsiZmxldD49MC4yNS4yIiwgIndlYnNvY2tldHMiLCAicGFuZGFzIiwgIm51bXB5IiwgInNjaWtpdC1sZWFybiJdCgpbdG9vbC5mbGV0XQpvcmcgPSAiY29tLmh5cGVydnlueCIKcHJvZHVjdCA9ICJIWVBFUiBBSSBCT1QiCmNvbXBhbnkgPSAiSHlwZXJ2eW54IgoKW3Rvb2wuZmxldC5hbmRyb2lkLnBlcm1pc3Npb25dCiJhbmRyb2lkLnBlcm1pc3Npb24uSU5URVJORVQiID0gdHJ1ZQoiYW5kcm9pZC5wZXJtaXNzaW9uLldBS0VfTE9DSyIgPSB0cnVlCg==" | base64 -d > pyproject.toml
+      - uses: actions/checkout@v4
+      - name: Run setup script
+        run: bash setup_build.sh
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+      - name: Accept Android SDK Licenses
+        run: yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
+      - name: Install Flet
+        run: pip install --upgrade pip && pip install "flet[all]>=0.25.2"
+      - name: Build Android APK
+        run: yes | flet build apk --yes --verbose
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: hyper-ai-bot-apk
+          path: build/apk/*.apk
           
