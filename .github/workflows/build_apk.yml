@@ -26,9 +26,9 @@ jobs:
       - name: Accept Android SDK Licenses
         run: yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
       - name: Install Flet
-        run: pip install --upgrade pip && pip install "flet[all]==0.28.3"
+        run: pip install --upgrade pip && pip install "flet[all]>=0.80.0"
       - name: Build Android APK
-        run: yes | flet build apk --verbose
+        run: yes | flet build apk --yes --verbose
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
