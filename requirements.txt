@@ -1,0 +1,5 @@
+flet==0.24.1
+websockets
+pandas
+numpy
+scikit-learn
