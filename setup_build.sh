@@ -1,4 +1,19 @@
 #!/bin/bash
 set -e
+sudo apt-get update && sudo apt-get install -y libgtk-3-dev clang cmake ninja-build pkg-config
 sed -i 's/flet==0.24.1/flet>=0.25.2/g' requirements.txt
-echo "W3Byb2plY3RdCm5hbWUgPSAiaHlwZXItYWktYm90Igp2ZXJzaW9uID0gIjEuMC4wIgpkZXNjcmlwdGlvbiA9ICJIWVBFUiBBSSBCT1QgLSBEZXJpdiBBdXRvbWF0ZWQgVHJhZGluZyBTeXN0ZW0iCnJlcXVpcmVzLXB5dGhvbiA9ICI+PTMuMTAiCmRlcGVuZGVuY2llcyA9IFsiZmxldD49MC4yNS4yIiwgIndlYnNvY2tldHMiLCAicGFuZGFzIiwgIm51bXB5IiwgInNjaWtpdC1sZWFybiJdCgpbdG9vbC5mbGV0XQpvcmcgPSAiY29tLmh5cGVydnlueCIKcHJvZHVjdCA9ICJIWVBFUiBBSSBCT1QiCmNvbXBhbnkgPSAiSHlwZXJ2eW54IgoKW3Rvb2wuZmxldC5hbmRyb2lkLnBlcm1pc3Npb25dCiJhbmRyb2lkLnBlcm1pc3Npb24uSU5URVJORVQiID0gdHJ1ZQoiYW5kcm9pZC5wZXJtaXNzaW9uLldBS0VfTE9DSyIgPSB0cnVlCg==" | base64 -d > pyproject.toml
+cat << 'EOF' > pyproject.toml
+[project]
+name = "hyper-ai-bot"
+version = "1.0.0"
+requires-python = ">=3.10"
+dependencies = ["flet>=0.25.2", "websockets", "pandas", "numpy", "scikit-learn"]
+
+[tool.flet]
+org = "com.hypervynx"
+product = "HYPER AI BOT"
+
+[tool.flet.android.permission]
+"android.permission.INTERNET" = true
+"android.permission.WAKE_LOCK" = true
+EOF
