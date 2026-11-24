@@ -15,8 +15,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install Linux build dependencies
+      - name: Auto-fix project configs & install dependencies
         run: |
+          sed -i 's/flet==0.24.1/flet>=0.25.2/g' requirements.txt pyproject.toml
           sudo apt-get update
           sudo apt-get install -y libgtk-3-dev clang cmake ninja-build pkg-config
 
@@ -34,18 +35,17 @@ jobs:
       - name: Accept Android SDK Licenses
         run: |
           yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
-          echo "flutter.sdk=$FLUTTER_ROOT" > local.properties
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.24.0'
+          flutter-version: '3.27.4'
           channel: 'stable'
 
       - name: Install Flet
         run: |
           python -m pip install --upgrade pip
-          pip install flet==0.24.1
+          pip install "flet>=0.25.2"
 
       - name: Build Android APK
         run: |
