@@ -15,7 +15,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Auto-fix project configs & install dependencies
+      - name: Auto-fix project configs & main.py
         run: |
           sed -i 's/flet==0.24.1/flet>=0.25.2/g' requirements.txt
           cat << 'EOF' > pyproject.toml
@@ -42,36 +42,194 @@ jobs:
           "android.permission.INTERNET" = true
           "android.permission.WAKE_LOCK" = true
           EOF
-          sudo apt-get update
-          sudo apt-get install -y libgtk-3-dev clang cmake ninja-build pkg-config
 
-      - name: Set up Python 3.11
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
+          cat << 'EOF' > main.py
+          import asyncio
+          import datetime
+          import flet as ft
+          from api.deriv_client import DerivClient
+          from core.ai_engine import MarketAIModel
+          from core.risk_manager import RiskManager
 
-      - name: Set up Java 17
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '17'
 
-      - name: Accept Android SDK Licenses
-        run: |
-          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
+          class HyperAIBotApp:
+              def __init__(self, page: ft.Page):
+                  self.page = page
+                  self.page.title = "HYPER AI BOT"
+                  self.page.theme_mode = ft.ThemeMode.DARK
+                  self.page.padding = 14
+                  self.page.scroll = ft.ScrollMode.AUTO
 
-      - name: Install Flet
-        run: |
-          python -m pip install --upgrade pip
-          pip install "flet[all]>=0.25.2"
+                  self.client = None
+                  self.risk_manager = RiskManager()
+                  self.models = {
+                      "XAU/USD": MarketAIModel("XAU/USD"),
+                      "EUR/USD": MarketAIModel("EUR/USD"),
+                  }
+                  self.is_running = False
+                  self.bot_task = None
 
-      - name: Build Android APK
-        run: |
-          yes | flet build apk --yes --verbose
+                  self.status_badge = ft.Text("DISCONNECTED", color=ft.Colors.RED_400, weight=ft.FontWeight.BOLD)
+                  self.account_type_text = ft.Text("Mode: Not Connected", size=13, color=ft.Colors.GREY_400)
+                  self.balance_text = ft.Text("$0.00", size=28, weight=ft.FontWeight.BOLD, color=ft.Colors.GREEN_400)
 
-      - name: Upload APK Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: hyper-ai-bot-apk
-          path: build/apk/*.apk
-          
+                  self.xau_signal_text = ft.Text("XAU/USD: Waiting...", size=15, weight=ft.FontWeight.W_600)
+                  self.xau_meta_text = ft.Text("Confidence: -- | Unseen Acc: --", size=12, color=ft.Colors.GREY_400)
+
+                  self.eur_signal_text = ft.Text("EUR/USD: Waiting...", size=15, weight=ft.FontWeight.W_600)
+                  self.eur_meta_text = ft.Text("Confidence: -- | Unseen Acc: --", size=12, color=ft.Colors.GREY_400)
+
+                  self.log_list = ft.ListView(height=210, spacing=6, auto_scroll=True)
+
+                  self.token_input = ft.TextField(
+                      label="Deriv API Token",
+                      password=True,
+                      can_reveal_password=True,
+                      hint_text="Paste Demo or Real Token",
+                  )
+                  self.app_id_input = ft.TextField(label="Deriv App ID", value="1089")
+                  self.stake_input = ft.TextField(label="Stake per Trade ($)", value="10.0", keyboard_type=ft.KeyboardType.NUMBER)
+                  self.min_conf_input = ft.TextField(label="Min AI Confidence (0.50 - 0.95)", value="0.65", keyboard_type=ft.KeyboardType.NUMBER)
+                  self.max_loss_input = ft.TextField(label="Max Daily Loss ($)", value="30.0", keyboard_type=ft.KeyboardType.NUMBER)
+                  self.max_streak_input = ft.TextField(label="Max Consecutive Losses", value="3", keyboard_type=ft.KeyboardType.NUMBER)
+
+                  self.start_btn = ft.ElevatedButton(
+                      "START AUTO-TRADING",
+                      icon=ft.Icons.PLAY_ARROW,
+                      bgcolor=ft.Colors.GREEN_700,
+                      color=ft.Colors.WHITE,
+                      on_click=self.toggle_bot,
+                      expand=True,
+                  )
+
+                  self.build_ui()
+
+              def log(self, message: str, color: str = ft.Colors.WHITE70):
+                  ts = datetime.datetime.now().strftime("%H:%M:%S")
+                  self.log_list.controls.append(ft.Text(f"[{ts}] {message}", size=12, color=color))
+                  if len(self.log_list.controls) > 80:
+                      self.log_list.controls.pop(0)
+                  self.page.update()
+
+              def build_ui(self):
+                  header = ft.Container(
+                      content=ft.Row(
+                          [
+                              ft.Column(
+                                  [
+                                      ft.Text("HYPER AI BOT", size=22, weight=ft.FontWeight.BOLD, color=ft.Colors.CYAN_300),
+                                      self.account_type_text,
+                                  ],
+                                  spacing=2,
+                              ),
+                              self.status_badge,
+                          ],
+                          alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+                      ),
+                      padding=12,
+                      bgcolor=ft.Colors.BLUE_GREY_900,
+                      border_radius=12,
+                  )
+
+                  balance_card = ft.Container(
+                      content=ft.Column(
+                          [
+                              ft.Text("Deriv Account Balance", size=12, color=ft.Colors.GREY_400),
+                              self.balance_text,
+                              ft.Row([self.start_btn]),
+                          ],
+                          spacing=8,
+                      ),
+                      padding=14,
+                      bgcolor=ft.Colors.BLUE_GREY_900,
+                      border_radius=12,
+                  )
+
+                  signals_card = ft.Container(
+                      content=ft.Column(
+                          [
+                              ft.Text("AI Market Analysis (5m Candles)", size=14, weight=ft.FontWeight.BOLD, color=ft.Colors.CYAN_200),
+                              ft.Divider(height=1),
+                              self.xau_signal_text,
+                              self.xau_meta_text,
+                              ft.Divider(height=1),
+                              self.eur_signal_text,
+                              self.eur_meta_text,
+                          ],
+                          spacing=6,
+                      ),
+                      padding=14,
+                      bgcolor=ft.Colors.BLUE_GREY_900,
+                      border_radius=12,
+                  )
+
+                  logs_card = ft.Container(
+                      content=ft.Column(
+                          [
+                              ft.Text("Live Execution & Risk Log", size=14, weight=ft.FontWeight.BOLD, color=ft.Colors.AMBER_300),
+                              self.log_list,
+                          ],
+                          spacing=6,
+                      ),
+                      padding=14,
+                      bgcolor=ft.Colors.BLACK54,
+                      border_radius=12,
+                  )
+
+                  settings_card = ft.Container(
+                      content=ft.Column(
+                          [
+                              ft.Text("Deriv API & Risk Controls", size=16, weight=ft.FontWeight.BOLD, color=ft.Colors.CYAN_300),
+                              self.token_input,
+                              self.app_id_input,
+                              self.stake_input,
+                              self.min_conf_input,
+                              self.max_loss_input,
+                              self.max_streak_input,
+                              ft.ElevatedButton(
+                                  "Connect & Save Settings",
+                                  icon=ft.Icons.LINK,
+                                  on_click=self.connect_deriv,
+                              ),
+                          ],
+                          spacing=10,
+                      ),
+                      padding=14,
+                      bgcolor=ft.Colors.BLUE_GREY_900,
+                      border_radius=12,
+                  )
+
+                  tabs = ft.Tabs(
+                      selected_index=0,
+                      tabs=[
+                          ft.Tab(
+                              text="Dashboard",
+                              icon=ft.Icons.DASHBOARD,
+                              content=ft.Column([balance_card, signals_card, logs_card], spacing=12),
+                          ),
+                          ft.Tab(
+                              text="API & Settings",
+                              icon=ft.Icons.SETTINGS,
+                              content=ft.Column([settings_card], spacing=12),
+                          ),
+                      ],
+                      expand=True,
+                  )
+
+                  self.page.add(header, tabs)
+                  self.log("System initialized. Enter your Deriv API Token in API & Settings.")
+
+              def _apply_risk_settings(self):
+                  self.risk_manager = RiskManager(
+                      min_confidence=float(self.min_conf_input.value or 0.65),
+                      stake_per_trade=float(self.stake_input.value or 10.0),
+                      max_daily_loss=float(self.max_loss_input.value or 30.0),
+                      max_consecutive_losses=int(self.max_streak_input.value or 3),
+                  )
+
+              async def connect_deriv(self, e):
+                  try:
+                      self._apply_risk_settings()
+                      if self.client:
+                          await self.client.disconnect()
+
