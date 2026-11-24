@@ -1,7 +1,11 @@
-import asyncio, datetime, flet as ft
+import os
+import asyncio
+import datetime
+import flet as ft
 from api.deriv_client import DerivClient
 from core.ai_engine import MarketAIModel
 from core.risk_manager import RiskManager
+
 
 class HyperAIBotApp:
     def __init__(self, page: ft.Page):
@@ -14,12 +18,14 @@ class HyperAIBotApp:
         self.risk_manager = RiskManager()
         self.models = {"XAU/USD": MarketAIModel("XAU/USD"), "EUR/USD": MarketAIModel("EUR/USD")}
         self.is_running = False
+
         self.status_badge = ft.Text("DISCONNECTED", color=ft.Colors.RED_400, weight=ft.FontWeight.BOLD)
         self.mode_text = ft.Text("Mode: Not Connected", size=13, color=ft.Colors.GREY_400)
         self.balance_text = ft.Text("$0.00", size=28, weight=ft.FontWeight.BOLD, color=ft.Colors.GREEN_400)
         self.xau_text = ft.Text("XAU/USD: Waiting...", size=14)
         self.eur_text = ft.Text("EUR/USD: Waiting...", size=14)
         self.log_list = ft.ListView(height=210, spacing=5, auto_scroll=True)
+
         self.token_in = ft.TextField(label="Deriv API Token", password=True, can_reveal_password=True)
         self.appid_in = ft.TextField(label="Deriv App ID", value="1089")
         self.stake_in = ft.TextField(label="Stake ($)", value="10.0")
@@ -111,4 +117,6 @@ class HyperAIBotApp:
                 self.log(f"Reconnecting: {ex}", ft.Colors.RED_300)
                 await asyncio.sleep(10)
 
-ft.app(target=lambda page: HyperAIBotApp(page))
+
+port = int(os.environ.get("PORT", 8080))
+ft.app(target=lambda page: HyperAIBotApp(page), view=ft.AppView.WEB_BROWSER, host="0.0.0.0", port=port)
