@@ -17,7 +17,31 @@ jobs:
 
       - name: Auto-fix project configs & install dependencies
         run: |
-          sed -i 's/flet==0.24.1/flet>=0.25.2/g' requirements.txt pyproject.toml
+          sed -i 's/flet==0.24.1/flet>=0.25.2/g' requirements.txt
+          cat << 'EOF' > pyproject.toml
+          [project]
+          name = "hyper-ai-bot"
+          version = "1.0.0"
+          description = "HYPER AI BOT - Deriv Automated Trading System"
+          requires-python = ">=3.10"
+          dependencies = [
+              "flet>=0.25.2",
+              "websockets",
+              "pandas",
+              "numpy",
+              "scikit-learn",
+          ]
+
+          [tool.flet]
+          org = "com.hypervynx"
+          product = "HYPER AI BOT"
+          company = "Hypervynx"
+          copyright = "Copyright (C) 2026 Hypervynx"
+
+          [tool.flet.android.permission]
+          "android.permission.INTERNET" = true
+          "android.permission.WAKE_LOCK" = true
+          EOF
           sudo apt-get update
           sudo apt-get install -y libgtk-3-dev clang cmake ninja-build pkg-config
 
