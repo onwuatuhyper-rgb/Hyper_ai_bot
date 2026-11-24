@@ -11,6 +11,7 @@ jobs:
     env:
       ANDROID_HOME: /usr/local/lib/android/sdk
       ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
+      GRADLE_OPTS: "-Xmx4g -Dorg.gradle.daemon=false"
     steps:
       - uses: actions/checkout@v4
       - name: Run setup script
@@ -24,17 +25,13 @@ jobs:
           java-version: '17'
       - name: Accept Android SDK Licenses
         run: yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
-            - name: Install Flet
+      - name: Install Flet
         run: pip install --upgrade pip && pip install "flet[all]==0.28.3"
       - name: Build Android APK
-        env:
-          GRADLE_OPTS: "-Xmx4g -Dorg.gradle.daemon=false"
         run: yes | flet build apk --yes --verbose
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: hyper-ai-bot-apk
           path: build/apk/*.apk
-          
-        
           
