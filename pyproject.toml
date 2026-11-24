@@ -1,0 +1,21 @@
+[project]
+name = "hyper-ai-bot"
+version = "1.0.0"
+description = "HYPER AI BOT - Deriv Automated Trading System"
+requires-python = ">=3.10"
+dependencies = [
+    "flet==0.24.1",
+    "websockets",
+    "pandas",
+    "numpy",
+    "scikit-learn",
+]
+
+[tool.flet]
+org = "com.hypervynx"
+product = "HYPER AI BOT"
+company = "Hypervynx"
+copyright = "Copyright (C) 2026 Hypervynx"
+
+[tool.flet.android]
+permission = ["android.permission.INTERNET", "android.permission.WAKE_LOCK"]
