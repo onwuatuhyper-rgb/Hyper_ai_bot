@@ -15,7 +15,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Auto-fix project configs & main.py
+      - name: Auto-fix project configs and main.py
         run: |
           sed -i 's/flet==0.24.1/flet>=0.25.2/g' requirements.txt
           cat << 'EOF' > pyproject.toml
@@ -24,19 +24,12 @@ jobs:
           version = "1.0.0"
           description = "HYPER AI BOT - Deriv Automated Trading System"
           requires-python = ">=3.10"
-          dependencies = [
-              "flet>=0.25.2",
-              "websockets",
-              "pandas",
-              "numpy",
-              "scikit-learn",
-          ]
+          dependencies = ["flet>=0.25.2", "websockets", "pandas", "numpy", "scikit-learn"]
 
           [tool.flet]
           org = "com.hypervynx"
           product = "HYPER AI BOT"
           company = "Hypervynx"
-          copyright = "Copyright (C) 2026 Hypervynx"
 
           [tool.flet.android.permission]
           "android.permission.INTERNET" = true
@@ -72,36 +65,20 @@ jobs:
                   self.status_badge = ft.Text("DISCONNECTED", color=ft.Colors.RED_400, weight=ft.FontWeight.BOLD)
                   self.account_type_text = ft.Text("Mode: Not Connected", size=13, color=ft.Colors.GREY_400)
                   self.balance_text = ft.Text("$0.00", size=28, weight=ft.FontWeight.BOLD, color=ft.Colors.GREEN_400)
-
                   self.xau_signal_text = ft.Text("XAU/USD: Waiting...", size=15, weight=ft.FontWeight.W_600)
                   self.xau_meta_text = ft.Text("Confidence: -- | Unseen Acc: --", size=12, color=ft.Colors.GREY_400)
-
                   self.eur_signal_text = ft.Text("EUR/USD: Waiting...", size=15, weight=ft.FontWeight.W_600)
                   self.eur_meta_text = ft.Text("Confidence: -- | Unseen Acc: --", size=12, color=ft.Colors.GREY_400)
-
                   self.log_list = ft.ListView(height=210, spacing=6, auto_scroll=True)
 
-                  self.token_input = ft.TextField(
-                      label="Deriv API Token",
-                      password=True,
-                      can_reveal_password=True,
-                      hint_text="Paste Demo or Real Token",
-                  )
+                  self.token_input = ft.TextField(label="Deriv API Token", password=True, can_reveal_password=True, hint_text="Paste Demo or Real Token")
                   self.app_id_input = ft.TextField(label="Deriv App ID", value="1089")
                   self.stake_input = ft.TextField(label="Stake per Trade ($)", value="10.0", keyboard_type=ft.KeyboardType.NUMBER)
                   self.min_conf_input = ft.TextField(label="Min AI Confidence (0.50 - 0.95)", value="0.65", keyboard_type=ft.KeyboardType.NUMBER)
                   self.max_loss_input = ft.TextField(label="Max Daily Loss ($)", value="30.0", keyboard_type=ft.KeyboardType.NUMBER)
                   self.max_streak_input = ft.TextField(label="Max Consecutive Losses", value="3", keyboard_type=ft.KeyboardType.NUMBER)
 
-                  self.start_btn = ft.ElevatedButton(
-                      "START AUTO-TRADING",
-                      icon=ft.Icons.PLAY_ARROW,
-                      bgcolor=ft.Colors.GREEN_700,
-                      color=ft.Colors.WHITE,
-                      on_click=self.toggle_bot,
-                      expand=True,
-                  )
-
+                  self.start_btn = ft.ElevatedButton("START AUTO-TRADING", icon=ft.Icons.PLAY_ARROW, bgcolor=ft.Colors.GREEN_700, color=ft.Colors.WHITE, on_click=self.toggle_bot, expand=True)
                   self.build_ui()
 
               def log(self, message: str, color: str = ft.Colors.WHITE70):
@@ -113,109 +90,26 @@ jobs:
 
               def build_ui(self):
                   header = ft.Container(
-                      content=ft.Row(
-                          [
-                              ft.Column(
-                                  [
-                                      ft.Text("HYPER AI BOT", size=22, weight=ft.FontWeight.BOLD, color=ft.Colors.CYAN_300),
-                                      self.account_type_text,
-                                  ],
-                                  spacing=2,
-                              ),
-                              self.status_badge,
-                          ],
-                          alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
-                      ),
-                      padding=12,
-                      bgcolor=ft.Colors.BLUE_GREY_900,
-                      border_radius=12,
+                      content=ft.Row([ft.Column([ft.Text("HYPER AI BOT", size=22, weight=ft.FontWeight.BOLD, color=ft.Colors.CYAN_300), self.account_type_text], spacing=2), self.status_badge], alignment=ft.MainAxisAlignment.SPACE_BETWEEN),
+                      padding=12, bgcolor=ft.Colors.BLUE_GREY_900, border_radius=12,
                   )
-
                   balance_card = ft.Container(
-                      content=ft.Column(
-                          [
-                              ft.Text("Deriv Account Balance", size=12, color=ft.Colors.GREY_400),
-                              self.balance_text,
-                              ft.Row([self.start_btn]),
-                          ],
-                          spacing=8,
-                      ),
-                      padding=14,
-                      bgcolor=ft.Colors.BLUE_GREY_900,
-                      border_radius=12,
+                      content=ft.Column([ft.Text("Deriv Account Balance", size=12, color=ft.Colors.GREY_400), self.balance_text, ft.Row([self.start_btn])], spacing=8),
+                      padding=14, bgcolor=ft.Colors.BLUE_GREY_900, border_radius=12,
                   )
-
                   signals_card = ft.Container(
-                      content=ft.Column(
-                          [
-                              ft.Text("AI Market Analysis (5m Candles)", size=14, weight=ft.FontWeight.BOLD, color=ft.Colors.CYAN_200),
-                              ft.Divider(height=1),
-                              self.xau_signal_text,
-                              self.xau_meta_text,
-                              ft.Divider(height=1),
-                              self.eur_signal_text,
-                              self.eur_meta_text,
-                          ],
-                          spacing=6,
-                      ),
-                      padding=14,
-                      bgcolor=ft.Colors.BLUE_GREY_900,
-                      border_radius=12,
+                      content=ft.Column([ft.Text("AI Market Analysis (5m Candles)", size=14, weight=ft.FontWeight.BOLD, color=ft.Colors.CYAN_200), ft.Divider(height=1), self.xau_signal_text, self.xau_meta_text, ft.Divider(height=1), self.eur_signal_text, self.eur_meta_text], spacing=6),
+                      padding=14, bgcolor=ft.Colors.BLUE_GREY_900, border_radius=12,
                   )
-
                   logs_card = ft.Container(
-                      content=ft.Column(
-                          [
-                              ft.Text("Live Execution & Risk Log", size=14, weight=ft.FontWeight.BOLD, color=ft.Colors.AMBER_300),
-                              self.log_list,
-                          ],
-                          spacing=6,
-                      ),
-                      padding=14,
-                      bgcolor=ft.Colors.BLACK54,
-                      border_radius=12,
+                      content=ft.Column([ft.Text("Live Execution & Risk Log", size=14, weight=ft.FontWeight.BOLD, color=ft.Colors.AMBER_300), self.log_list], spacing=6),
+                      padding=14, bgcolor=ft.Colors.BLACK54, border_radius=12,
                   )
-
                   settings_card = ft.Container(
-                      content=ft.Column(
-                          [
-                              ft.Text("Deriv API & Risk Controls", size=16, weight=ft.FontWeight.BOLD, color=ft.Colors.CYAN_300),
-                              self.token_input,
-                              self.app_id_input,
-                              self.stake_input,
-                              self.min_conf_input,
-                              self.max_loss_input,
-                              self.max_streak_input,
-                              ft.ElevatedButton(
-                                  "Connect & Save Settings",
-                                  icon=ft.Icons.LINK,
-                                  on_click=self.connect_deriv,
-                              ),
-                          ],
-                          spacing=10,
-                      ),
-                      padding=14,
-                      bgcolor=ft.Colors.BLUE_GREY_900,
-                      border_radius=12,
+                      content=ft.Column([ft.Text("Deriv API & Risk Controls", size=16, weight=ft.FontWeight.BOLD, color=ft.Colors.CYAN_300), self.token_input, self.app_id_input, self.stake_input, self.min_conf_input, self.max_loss_input, self.max_streak_input, ft.ElevatedButton("Connect & Save Settings", icon=ft.Icons.LINK, on_click=self.connect_deriv)], spacing=10),
+                      padding=14, bgcolor=ft.Colors.BLUE_GREY_900, border_radius=12,
                   )
-
-                  tabs = ft.Tabs(
-                      selected_index=0,
-                      tabs=[
-                          ft.Tab(
-                              text="Dashboard",
-                              icon=ft.Icons.DASHBOARD,
-                              content=ft.Column([balance_card, signals_card, logs_card], spacing=12),
-                          ),
-                          ft.Tab(
-                              text="API & Settings",
-                              icon=ft.Icons.SETTINGS,
-                              content=ft.Column([settings_card], spacing=12),
-                          ),
-                      ],
-                      expand=True,
-                  )
-
+                  tabs = ft.Tabs(selected_index=0, tabs=[ft.Tab(text="Dashboard", icon=ft.Icons.DASHBOARD, content=ft.Column([balance_card, signals_card, logs_card], spacing=12)), ft.Tab(text="API & Settings", icon=ft.Icons.SETTINGS, content=ft.Column([settings_card], spacing=12))], expand=True)
                   self.page.add(header, tabs)
                   self.log("System initialized. Enter your Deriv API Token in API & Settings.")
 
@@ -232,4 +126,48 @@ jobs:
                       self._apply_risk_settings()
                       if self.client:
                           await self.client.disconnect()
+                      self.log("Connecting to Deriv WebSocket...")
+                      self.client = DerivClient(app_id=self.app_id_input.value, api_token=self.token_input.value)
+                      info = await self.client.connect()
+                      mode_label = "DEMO (Virtual)" if info["is_virtual"] else "REAL ACCOUNT"
+                      self.status_badge.value = "CONNECTED"
+                      self.status_badge.color = ft.Colors.GREEN_400
+                      self.account_type_text.value = f"{mode_label} | ID: {info['loginid']}"
+                      self.balance_text.value = f"${info['balance']:,.2f} {info['currency']}"
+                      self.log(f"Connected to {info['loginid']} ({mode_label}).", ft.Colors.GREEN_300)
+                  except Exception as ex:
+                      self.status_badge.value = "ERROR"
+                      self.status_badge.color = ft.Colors.RED_400
+                      self.log(f"Connection failed: {ex}", ft.Colors.RED_300)
+                  self.page.update()
 
+              async def toggle_bot(self, e):
+                  if self.is_running:
+                      self.is_running = False
+                      self.start_btn.text = "START AUTO-TRADING"
+                      self.start_btn.icon = ft.Icons.PLAY_ARROW
+                      self.start_btn.bgcolor = ft.Colors.GREEN_700
+                      self.log("Auto-trading stopped by user.", ft.Colors.AMBER_300)
+                      self.page.update()
+                      return
+                  if not self.client or not self.client.is_authorized:
+                      await self.connect_deriv(None)
+                      if not self.client or not self.client.is_authorized:
+                          return
+                  self._apply_risk_settings()
+                  self.is_running = True
+                  self.start_btn.text = "STOP AUTO-TRADING"
+                  self.start_btn.icon = ft.Icons.STOP
+                  self.start_btn.bgcolor = ft.Colors.RED_700
+                  self.log("AI engine started. Training & validating on historical candles...", ft.Colors.CYAN_300)
+                  self.page.update()
+                  self.bot_task = asyncio.create_task(self._trading_loop())
+
+              async def _trading_loop(self):
+                  while self.is_running:
+                      try:
+                          balance = await self.client.get_balance()
+                          self.balance_text.value = f"${balance:,.2f}"
+                          for pair in ("XAU/USD", "EUR/USD"):
+                              if not self.is_running:
+                              
