@@ -28,7 +28,7 @@ jobs:
       - name: Install Flet
         run: pip install --upgrade pip && pip install "flet[all]==0.28.3"
       - name: Build Android APK
-        run: yes | flet build apk --yes --verbose
+        run: yes | flet build apk --verbose
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
