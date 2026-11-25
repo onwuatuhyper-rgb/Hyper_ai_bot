@@ -47,10 +47,23 @@ class HyperAIBotApp:
         bal = ft.Container(padding=14, bgcolor=ft.Colors.BLUE_GREY_900, border_radius=12, content=ft.Column([ft.Text("Deriv Balance", size=12, color=ft.Colors.GREY_400), self.balance_text, self.btn]))
         sig = ft.Container(padding=14, bgcolor=ft.Colors.BLUE_GREY_900, border_radius=12, content=ft.Column([ft.Text("AI Signals (5m)", weight=ft.FontWeight.BOLD, color=ft.Colors.CYAN_200), self.xau_text, self.eur_text]))
         logs = ft.Container(padding=14, bgcolor=ft.Colors.GREY_900, border_radius=12, content=ft.Column([ft.Text("Execution Log", weight=ft.FontWeight.BOLD, color=ft.Colors.AMBER_300), self.log_list]))
-        cfg = ft.Container(padding=14, bgcolor=ft.Colors.BLUE_GREY_900, border_radius=12, content=ft.Column([self.token_in, self.appid_in, self.stake_in, self.conf_in, self.loss_in, self.streak_in, ft.Button("Connect & Save", on_click=self.connect_deriv)]))
-        tabs = ft.Tabs(selected_index=0, expand=True, tabs=[ft.Tab(label="Dashboard", content=ft.Column([bal, sig, logs])), ft.Tab(label="API & Settings", content=ft.Column([cfg]))])
-        self.page.add(hdr, tabs)
-        self.log("Ready. Enter Deriv API Token in API & Settings.")
+        cfg = ft.Container(padding=14, bgcolor=ft.Colors.BLUE_GREY_900, border_radius=12, content=ft.Column([ft.Text("Deriv API & Risk Settings", weight=ft.FontWeight.BOLD, color=ft.Colors.CYAN_200), self.token_in, self.appid_in, self.stake_in, self.conf_in, self.loss_in, self.streak_in, ft.Button("Connect & Save", on_click=self.connect_deriv)]))
+
+        self.dash_view = ft.Column([bal, sig, logs], spacing=12, visible=True)
+        self.cfg_view = ft.Column([cfg], spacing=12, visible=False)
+
+        nav = ft.Row([
+            ft.Button("Dashboard", on_click=lambda e: self._switch_view(True)),
+            ft.Button("API & Settings", on_click=lambda e: self._switch_view(False)),
+        ])
+
+        self.page.add(hdr, nav, self.dash_view, self.cfg_view)
+        self.log("Ready. Tap 'API & Settings' to enter your Deriv API Token.")
+
+    def _switch_view(self, show_dash: bool):
+        self.dash_view.visible = show_dash
+        self.cfg_view.visible = not show_dash
+        self.page.update()
 
     def _set_risk(self):
         self.risk_manager = RiskManager(float(self.conf_in.value or 0.65), float(self.stake_in.value or 10.0), float(self.loss_in.value or 30.0), int(self.streak_in.value or 3))
@@ -67,6 +80,7 @@ class HyperAIBotApp:
             self.mode_text.value = f"{mode} | {info['loginid']}"
             self.balance_text.value = f"${info['balance']:,.2f}"
             self.log(f"Connected ({mode}): {info['loginid']}", ft.Colors.GREEN_300)
+            self._switch_view(True)
         except Exception as ex:
             self.status_badge.value, self.status_badge.color = "ERROR", ft.Colors.RED_400
             self.log(f"Auth error: {ex}", ft.Colors.RED_300)
@@ -122,4 +136,3 @@ port = int(os.environ.get("PORT", 8080))
 os.environ["FLET_SERVER_PORT"] = str(port)
 os.environ["FLET_SERVER_IP"] = "0.0.0.0"
 ft.run(lambda page: HyperAIBotApp(page), view=ft.AppView.WEB_BROWSER, host="0.0.0.0", port=port)
-        
