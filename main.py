@@ -48,7 +48,7 @@ class HyperAIBotApp:
         sig = ft.Container(padding=14, bgcolor=ft.Colors.BLUE_GREY_900, border_radius=12, content=ft.Column([ft.Text("AI Signals (5m)", weight=ft.FontWeight.BOLD, color=ft.Colors.CYAN_200), self.xau_text, self.eur_text]))
         logs = ft.Container(padding=14, bgcolor=ft.Colors.GREY_900, border_radius=12, content=ft.Column([ft.Text("Execution Log", weight=ft.FontWeight.BOLD, color=ft.Colors.AMBER_300), self.log_list]))
         cfg = ft.Container(padding=14, bgcolor=ft.Colors.BLUE_GREY_900, border_radius=12, content=ft.Column([self.token_in, self.appid_in, self.stake_in, self.conf_in, self.loss_in, self.streak_in, ft.Button("Connect & Save", on_click=self.connect_deriv)]))
-        tabs = ft.Tabs(selected_index=0, expand=True, tabs=[ft.Tab(text="Dashboard", content=ft.Column([bal, sig, logs])), ft.Tab(text="API & Settings", content=ft.Column([cfg]))])
+        tabs = ft.Tabs(selected_index=0, expand=True, tabs=[ft.Tab(label="Dashboard", content=ft.Column([bal, sig, logs])), ft.Tab(label="API & Settings", content=ft.Column([cfg]))])
         self.page.add(hdr, tabs)
         self.log("Ready. Enter Deriv API Token in API & Settings.")
 
@@ -120,4 +120,4 @@ class HyperAIBotApp:
 
 port = int(os.environ.get("PORT", 8080))
 ft.run(lambda page: HyperAIBotApp(page), view=ft.AppView.WEB_BROWSER, host="0.0.0.0", port=port)
-    
+        
