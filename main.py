@@ -119,5 +119,7 @@ class HyperAIBotApp:
 
 
 port = int(os.environ.get("PORT", 8080))
+os.environ["FLET_SERVER_PORT"] = str(port)
+os.environ["FLET_SERVER_IP"] = "0.0.0.0"
 ft.run(lambda page: HyperAIBotApp(page), view=ft.AppView.WEB_BROWSER, host="0.0.0.0", port=port)
         
