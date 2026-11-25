@@ -119,5 +119,5 @@ class HyperAIBotApp:
 
 
 port = int(os.environ.get("PORT", 8080))
-ft.app(target=lambda page: HyperAIBotApp(page), view=ft.AppView.WEB_BROWSER, host="0.0.0.0", port=port)
-        
+ft.run(lambda page: HyperAIBotApp(page), view=ft.AppView.WEB_BROWSER, host="0.0.0.0", port=port)
+    
